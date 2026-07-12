@@ -1,9 +1,28 @@
-venv/
+# Python
 __pycache__/
-*.pyc
+*.py[cod]
+*.pyo
+
+# Virtual Environment
+.venv/
+venv/
+
+# Environment Variables
 .env
+.env.local
+
+# Python Framework
 .nicegui/
+
+# Node.js
 node_modules/
 .next/
 dist/
-.env.local
+out/
+
+# VS Code
+.vscode/
+
+# OS Files
+.DS_Store
+Thumbs.db
