@@ -1,35 +1,47 @@
-import os
-
-from dotenv import load_dotenv
 from google import genai
 from google.genai.errors import ClientError, ServerError
 
-load_dotenv()
+from ai.config import settings
+from ai.interfaces.llm import LLMClient
+from ai.logger import logger
 
-API_KEY = os.getenv("GEMINI_API_KEY")
-MODEL_NAME = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
 
-if not API_KEY:
+if not settings.GEMINI_API_KEY:
     raise RuntimeError("GEMINI_API_KEY not found in .env")
 
-client = genai.Client(api_key=API_KEY)
+
+client = genai.Client(api_key=settings.GEMINI_API_KEY)
 
 
-def generate_response(prompt: str) -> str:
-    try:
-        # print(f"Using model: {MODEL_NAME}")
+class GeminiClient(LLMClient):
+    """
+    Gemini implementation of the LLM interface.
+    """
 
-        response = client.models.generate_content(
-            model=MODEL_NAME,
-            contents=prompt,
-        )
+    def generate(self, prompt: str) -> str:
+        try:
+            logger.info(
+                "Sending request to Gemini model: %s",
+                settings.GEMINI_MODEL,
+            )
 
-        return response.text
+            response = client.models.generate_content(
+                model=settings.GEMINI_MODEL,
+                contents=prompt,
+            )
 
-    except ClientError as e:
-        print(f"Client Error: {e}")
-        raise
+            logger.info("Gemini response received successfully.")
 
-    except ServerError as e:
-        print(f"Server Error: {e}")
-        raise
+            return response.text
+
+        except ClientError as e:
+            logger.error("Gemini Client Error: %s", e)
+            raise RuntimeError(f"Gemini Client Error: {e}") from e
+
+        except ServerError as e:
+            logger.error("Gemini Server Error: %s", e)
+            raise RuntimeError(f"Gemini Server Error: {e}") from e
+
+        except Exception as e:
+            logger.exception("Unexpected Gemini Error")
+            raise RuntimeError(f"Unexpected Gemini Error: {e}") from e
