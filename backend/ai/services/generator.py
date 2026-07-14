@@ -1,28 +1,37 @@
-from ai.factory import get_llm_client
+import time
+
+from ai.clients.gemini import generate_response
 from ai.logger import logger
 from ai.prompts.ui_prompt import build_ui_prompt
 from models.telemetry import TelemetryData
 
 
-llm = get_llm_client()
-
-
-def generate_ui(telemetry: TelemetryData) -> str:
+def generate_ui(telemetry: TelemetryData) -> dict:
     """
-    Generate a React UI component based on telemetry data.
+    Generate an adaptive UI component based on telemetry.
     """
 
     logger.info(
-        "Starting UI generation for component: %s",
-        telemetry.component_name,
+        f"Starting UI generation for component: {telemetry.component_name}"
     )
 
     prompt = build_ui_prompt(telemetry)
 
     logger.info("Prompt generated successfully.")
 
-    response = llm.generate(prompt)
+    start = time.perf_counter()
 
-    logger.info("UI generation completed successfully.")
+    component = generate_response(prompt)
 
-    return response
+    end = time.perf_counter()
+
+    generation_time = round(end - start, 2)
+
+    logger.info(
+        f"Generation completed in {generation_time} seconds."
+    )
+
+    return {
+        "component": component,
+        "generation_time": generation_time,
+    }

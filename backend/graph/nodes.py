@@ -1,7 +1,5 @@
-from ai.constants import (
-    HIGH_COGNITIVE_LOAD,
-    MEDIUM_COGNITIVE_LOAD,
-)
+import time
+
 from ai.factory import get_llm_client
 from ai.logger import logger
 from ai.prompts.ui_prompt import build_ui_prompt
@@ -11,18 +9,17 @@ llm = get_llm_client()
 
 def analyze_telemetry(state):
     """
-    Analyze telemetry data and determine the cognitive load strategy.
+    Decide adaptation strategy from telemetry.
     """
 
     telemetry = state["telemetry"]
+
     score = telemetry.cognitive_score
 
-    if score >= HIGH_COGNITIVE_LOAD:
+    if score >= 0.8:
         strategy = "high_cognitive_load"
-
-    elif score >= MEDIUM_COGNITIVE_LOAD:
+    elif score >= 0.5:
         strategy = "medium_cognitive_load"
-
     else:
         strategy = "low_cognitive_load"
 
@@ -35,37 +32,45 @@ def analyze_telemetry(state):
 
 def build_prompt(state):
     """
-    Build the LLM prompt from telemetry data.
+    Build the prompt for the LLM.
     """
 
     logger.info("Building prompt...")
 
-    state["prompt"] = build_ui_prompt(
-        state["telemetry"]
-    )
+    state["prompt"] = build_ui_prompt(state["telemetry"])
 
     return state
 
 
 def generate_component(state):
     """
-    Generate the React component using the configured LLM.
+    Generate UI component using Gemini.
     """
 
     logger.info("Generating component...")
 
+    start = time.perf_counter()
+
     try:
-        state["component"] = llm.generate(
-            state["prompt"]
-        )
+
+        state["component"] = llm.generate(state["prompt"])
+
+        end = time.perf_counter()
+
+        state["generation_time"] = round(end - start, 2)
 
         state["is_valid"] = True
 
     except Exception as e:
-        logger.error("Component generation failed: %s", e)
+
+        end = time.perf_counter()
+
+        state["generation_time"] = round(end - start, 2)
 
         state["component"] = ""
+
         state["is_valid"] = False
+
         state["errors"].append(str(e))
 
     return state

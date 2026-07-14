@@ -32,7 +32,15 @@ class GeminiClient(LLMClient):
 
             logger.info("Gemini response received successfully.")
 
-            return response.text
+            component = response.text
+
+            component = component.replace("```tsx", "")
+            component = component.replace("```typescript", "")
+            component = component.replace("```jsx", "")
+            component = component.replace("```", "")
+            component = component.strip()
+
+            return component
 
         except ClientError as e:
             logger.error("Gemini Client Error: %s", e)

@@ -1,22 +1,21 @@
 from fastapi import FastAPI
 
+from api.generate import router as generate_router
+
 app = FastAPI(
     title="AuraGen AI Backend",
-    description="AI Backend for AuraGen Self-Healing UI",
-    version="1.0.0"
+    version="1.0.0",
 )
 
 
 @app.get("/")
 def home():
-    return {
-        "status": "success",
-        "message": "AuraGen AI Backend Running 🚀"
-    }
+    return {"message": "AuraGen Backend Running"}
 
 
 @app.get("/health")
 def health():
-    return {
-        "status": "healthy"
-    }
+    return {"status": "healthy"}
+
+
+app.include_router(generate_router)
