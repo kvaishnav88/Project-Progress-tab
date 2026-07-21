@@ -3,27 +3,28 @@ import time
 from ai.factory import get_llm_client
 from ai.logger import logger
 from ai.prompts.ui_prompt import build_ui_prompt
+from ai.services.cognitive_analyzer import CognitiveAnalyzer
+analyzer = CognitiveAnalyzer()
 
 llm = get_llm_client()
 
 
 def analyze_telemetry(state):
     """
-    Decide adaptation strategy from telemetry.
+    Analyze telemetry and determine the UI adaptation strategy.
     """
 
     telemetry = state["telemetry"]
 
-    score = telemetry.cognitive_score
+    score, strategy = analyzer.analyze(telemetry)
 
-    if score >= 0.8:
-        strategy = "high_cognitive_load"
-    elif score >= 0.5:
-        strategy = "medium_cognitive_load"
-    else:
-        strategy = "low_cognitive_load"
+    telemetry.cognitive_score = score
 
-    logger.info("Selected strategy: %s", strategy)
+    logger.info(
+        "Cognitive Score: %.2f | Strategy: %s",
+        score,
+        strategy,
+    )
 
     state["strategy"] = strategy
 
