@@ -1,4 +1,4 @@
-from typing import TypedDict
+from typing import Any, TypedDict
 
 from models.telemetry import TelemetryData
 
@@ -11,6 +11,8 @@ class GraphState(TypedDict):
     telemetry: TelemetryData
 
     strategy: str
+
+    decision: dict[str, Any]
 
     prompt: str
 

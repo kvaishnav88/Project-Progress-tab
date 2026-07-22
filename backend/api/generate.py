@@ -22,16 +22,17 @@ def generate_ui(
     """
 
     result = workflow.invoke(
-       {
-            "telemetry": telemetry,
-            "strategy": "",
-            "prompt": "",
-            "component": "",
-            "is_valid": False,
-            "errors": [],
-            "generation_time": 0.0,
-        }
-    )
+    {
+        "telemetry": telemetry,
+        "strategy": "",
+        "decision": {},
+        "prompt": "",
+        "component": "",
+        "is_valid": False,
+        "errors": [],
+        "generation_time": 0.0,
+    }
+)
 
     return GenerateResponse(
         strategy=result["strategy"],
