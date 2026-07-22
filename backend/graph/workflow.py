@@ -7,6 +7,7 @@ from graph.nodes import (
     build_standard_prompt_node,
     build_adaptive_prompt,
     generate_component,
+    validate_component,
 )
 from graph.state import GraphState
 
@@ -25,6 +26,7 @@ builder.add_node(
     build_standard_prompt_node,
 )
 builder.add_node("generate", generate_component)
+builder.add_node("validate", validate_component)
 
 builder.add_edge(START, "analyze")
 builder.add_edge("analyze", "decision")
@@ -40,6 +42,14 @@ builder.add_conditional_edges(
 
 builder.add_edge("adaptive_prompt", "generate")
 builder.add_edge("standard_prompt", "generate")
-builder.add_edge("generate", END)
+builder.add_edge(
+    "generate",
+    "validate",
+)
+
+builder.add_edge(
+    "validate",
+    END,
+)
 
 workflow = builder.compile()

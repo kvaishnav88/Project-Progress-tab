@@ -8,10 +8,12 @@ from ai.prompts.ui_prompt import (
 )
 from ai.services.cognitive_analyzer import CognitiveAnalyzer
 from ai.services.decision_engine import DecisionEngine
+from ai.services.validator import ResponseValidator
 
 llm = get_llm_client()
 analyzer = CognitiveAnalyzer()
 decision_engine = DecisionEngine()
+validator = ResponseValidator()
 
 
 def analyze_telemetry(state):
@@ -60,7 +62,13 @@ def choose_prompt(state):
     if strategy == "low_cognitive_load":
         return "standard_prompt"
 
-    return "adaptive_prompt"
+    if strategy in (
+    "medium_cognitive_load",
+    "high_cognitive_load",
+    ):
+        return "adaptive_prompt"
+
+    return "standard_prompt"
 
 
 def build_standard_prompt_node(state):
@@ -107,7 +115,7 @@ def generate_component(state):
 
         state["generation_time"] = round(end - start, 2)
 
-        state["is_valid"] = True
+        #state["is_valid"] = True
 
     except Exception as e:
 
@@ -123,3 +131,26 @@ def generate_component(state):
 
     return state
 
+def validate_component(state):
+    """
+    Validate the generated component.
+    """
+
+    logger.info("Validating generated component...")
+
+    valid, errors = validator.validate(
+        state["component"]
+    )
+
+    state["errors"].extend(errors)
+    state["is_valid"] = valid and len(state["errors"]) == 0
+
+    if valid:
+        logger.info("Validation successful.")
+    else:
+        logger.warning(
+            "Validation failed: %s",
+            errors,
+        )
+
+    return state
