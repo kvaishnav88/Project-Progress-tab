@@ -2,7 +2,10 @@ import time
 
 from ai.factory import get_llm_client
 from ai.logger import logger
-from ai.prompts.ui_prompt import build_ui_prompt
+from ai.prompts.ui_prompt import (
+    build_standard_prompt,
+    build_ui_prompt,
+)
 from ai.services.cognitive_analyzer import CognitiveAnalyzer
 from ai.services.decision_engine import DecisionEngine
 
@@ -47,21 +50,45 @@ def decide_adaptation(state):
 
     return state
 
-
-def build_prompt(state):
+def choose_prompt(state):
     """
-    Build the prompt for the LLM.
+    Decide which prompt builder to use.
     """
 
-    logger.info("Building prompt...")
+    strategy = state["strategy"]
 
-    state["prompt"] = build_ui_prompt(
-    state["telemetry"],
-    state["decision"],
+    if strategy == "low_cognitive_load":
+        return "standard_prompt"
+
+    return "adaptive_prompt"
+
+
+def build_standard_prompt_node(state):
+    """
+    Build a standard prompt for users with low cognitive load.
+    """
+
+    logger.info("Building standard prompt...")
+
+    state["prompt"] = build_standard_prompt(
+        state["telemetry"]
     )
 
     return state
 
+def build_adaptive_prompt(state):
+    """
+    Build an adaptive prompt for medium/high cognitive load.
+    """
+
+    logger.info("Building adaptive prompt...")
+
+    state["prompt"] = build_ui_prompt(
+        state["telemetry"],
+        state["decision"],
+    )
+
+    return state
 
 def generate_component(state):
     """

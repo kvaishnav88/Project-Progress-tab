@@ -105,6 +105,30 @@ Visual Complexity:
 {decision["visual_complexity"]}
 """
 
+def build_standard_prompt(
+    telemetry: TelemetryData,
+) -> str:
+    """
+    Build a prompt for users with low cognitive load.
+    """
+
+    return f"""
+You are a Senior React, TypeScript and Tailwind CSS Engineer.
+
+Generate a clean, modern React component.
+
+Component:
+{telemetry.component_name}
+
+Requirements
+
+- React TypeScript
+- Tailwind CSS
+- Responsive
+- Accessible
+- Maintain normal UI density
+- Return ONLY the React component
+"""
 
 def get_generation_rules() -> str:
     """
