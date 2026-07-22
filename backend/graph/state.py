@@ -13,6 +13,8 @@ class GraphState(TypedDict):
     strategy: str
 
     decision: dict[str, Any]
+    
+    prompt_type: str
 
     prompt: str
 

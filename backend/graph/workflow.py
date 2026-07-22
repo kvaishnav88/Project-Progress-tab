@@ -8,6 +8,7 @@ from graph.nodes import (
     build_adaptive_prompt,
     generate_component,
     validate_component,
+    log_metrics,
 )
 from graph.state import GraphState
 
@@ -27,6 +28,10 @@ builder.add_node(
 )
 builder.add_node("generate", generate_component)
 builder.add_node("validate", validate_component)
+builder.add_node(
+    "metrics",
+    log_metrics,
+)
 
 builder.add_edge(START, "analyze")
 builder.add_edge("analyze", "decision")
@@ -49,6 +54,11 @@ builder.add_edge(
 
 builder.add_edge(
     "validate",
+    "metrics",
+)
+
+builder.add_edge(
+    "metrics",
     END,
 )
 

@@ -9,11 +9,13 @@ from ai.prompts.ui_prompt import (
 from ai.services.cognitive_analyzer import CognitiveAnalyzer
 from ai.services.decision_engine import DecisionEngine
 from ai.services.validator import ResponseValidator
+from ai.services.metrics_logger import MetricsLogger
 
 llm = get_llm_client()
 analyzer = CognitiveAnalyzer()
 decision_engine = DecisionEngine()
 validator = ResponseValidator()
+metrics_logger = MetricsLogger()
 
 
 def analyze_telemetry(state):
@@ -81,6 +83,7 @@ def build_standard_prompt_node(state):
     state["prompt"] = build_standard_prompt(
         state["telemetry"]
     )
+    state["prompt_type"] = "standard"
 
     return state
 
@@ -95,6 +98,7 @@ def build_adaptive_prompt(state):
         state["telemetry"],
         state["decision"],
     )
+    state["prompt_type"] = "adaptive"
 
     return state
 
@@ -152,5 +156,14 @@ def validate_component(state):
             "Validation failed: %s",
             errors,
         )
+
+    return state
+
+def log_metrics(state):
+    """
+    Log workflow metrics.
+    """
+
+    metrics_logger.log_summary(state)
 
     return state

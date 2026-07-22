@@ -26,6 +26,7 @@ def generate_ui(
         "telemetry": telemetry,
         "strategy": "",
         "decision": {},
+        "prompt_type": "",
         "prompt": "",
         "component": "",
         "is_valid": False,
