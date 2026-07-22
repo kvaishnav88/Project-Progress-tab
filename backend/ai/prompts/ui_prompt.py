@@ -9,8 +9,7 @@ def get_cognitive_state(score: float) -> str:
         return "High Cognitive Load"
     elif score >= 0.5:
         return "Moderate Cognitive Load"
-    else:
-        return "Low Cognitive Load"
+    return "Low Cognitive Load"
 
 
 def get_behavior_summary(telemetry: TelemetryData) -> list[str]:
@@ -42,13 +41,95 @@ def get_behavior_summary(telemetry: TelemetryData) -> list[str]:
     return observations
 
 
+def get_system_prompt() -> str:
+    """
+    Defines the AI's role.
+    """
+    return """
+You are a Senior React, TypeScript, Tailwind CSS and UX Engineer.
+
+Your responsibility is to generate adaptive UI components
+that reduce user cognitive load.
+
+Always produce:
+- Clean React TypeScript code
+- Tailwind CSS only
+- Accessible UI
+- Readable code
+- Responsive layout
+
+Return ONLY the React component code.
+"""
+
+
+def get_context_prompt(
+    telemetry: TelemetryData,
+    cognitive_state: str,
+    observations: str,
+) -> str:
+    """
+    Build telemetry context section.
+    """
+    return f"""
+Current Component:
+{telemetry.component_name}
+
+User Cognitive State:
+{cognitive_state}
+
+Observed Behaviour:
+{observations}
+"""
+
+
+def get_decision_prompt(decision: dict) -> str:
+    """
+    Build decision engine section.
+    """
+    return f"""
+UI Adaptation Strategy
+
+Layout:
+{decision["layout"]}
+
+Spacing:
+{decision["spacing"]}
+
+Button Size:
+{decision["buttons"]}
+
+Secondary Actions:
+{decision["secondary_actions"]}
+
+Visual Complexity:
+{decision["visual_complexity"]}
+"""
+
+
+def get_generation_rules() -> str:
+    """
+    Build generation rules section.
+    """
+    return """
+Requirements
+
+- Use React with TypeScript.
+- Use Tailwind CSS only.
+- Follow the UI Adaptation Strategy exactly.
+- Reduce cognitive load.
+- Improve accessibility.
+- Increase readability.
+- Avoid unnecessary complexity.
+- Return ONLY the React component code.
+"""
+
+
 def build_ui_prompt(
     telemetry: TelemetryData,
     decision: dict,
 ) -> str:
     """
-    Build a structured prompt for Gemini based on telemetry
-    and the UI adaptation decision.
+    Build the final prompt sent to Gemini.
     """
 
     cognitive_state = get_cognitive_state(
@@ -56,44 +137,21 @@ def build_ui_prompt(
     )
 
     observations = "\n".join(
-        f"- {obs}" for obs in get_behavior_summary(telemetry)
+        f"- {obs}"
+        for obs in get_behavior_summary(telemetry)
     )
 
-    layout = decision["layout"]
-    spacing = decision["spacing"]
-    buttons = decision["buttons"]
-    secondary_actions = decision["secondary_actions"]
-    visual_complexity = decision["visual_complexity"]
+    prompt = "\n\n".join(
+        [
+            get_system_prompt(),
+            get_context_prompt(
+                telemetry,
+                cognitive_state,
+                observations,
+            ),
+            get_decision_prompt(decision),
+            get_generation_rules(),
+        ]
+    )
 
-    return f"""
-You are an expert React, TypeScript, and Tailwind CSS engineer.
-
-Your task is to redesign the UI for better usability.
-
-Current Component:
-{telemetry.component_name}
-
-User State:
-{cognitive_state}
-
-Observed Behaviour:
-{observations}
-
-UI Adaptation Strategy:
-
-- Layout: {layout}
-- Spacing: {spacing}
-- Button Size: {buttons}
-- Secondary Actions Enabled: {secondary_actions}
-- Visual Complexity: {visual_complexity}
-
-Requirements:
-
-- Generate clean React TypeScript code.
-- Use Tailwind CSS only.
-- Follow the UI Adaptation Strategy exactly.
-- Reduce cognitive load.
-- Improve readability.
-- Improve accessibility.
-- Return ONLY the React component code.
-"""
+    return prompt
