@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { parseGeneratedComponent } from "../babel/parser";
 import { validateComponentSafety } from "../babel/validator";
 import { compileGeneratedComponent } from "./compile";
 import { parseGeneratedComponent, extractComponentName } from "../babel/parser";
@@ -42,14 +41,19 @@ export function DynamicRenderer({ componentSource, fallback }: DynamicRendererPr
     }
 
     try {
+      const cleanedCode = compiled.compiledCode
+        .replace(
+          /import\s*{\s*jsx as _jsx\s*}\s*from\s*["']react\/jsx-runtime["'];?/,
+          "const _jsx = React.createElement;"
+        )
+        .replace(/export\s+default\s+/, "")
+        .replace(/^export\s+/gm, "");
+
       const moduleFactory = new Function(
         "React",
         `
         const exports = {};
-        ${compiled.compiledCode.replace(
-          /import\s*{\s*jsx as _jsx\s*}\s*from\s*["']react\/jsx-runtime["'];?/,
-          "const _jsx = React.createElement;"
-        )}
+        ${cleanedCode}
         return ${componentName};
         `
       );
