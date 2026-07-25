@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { parseGeneratedComponent } from "../babel/parser";
 import { validateComponentSafety } from "../babel/validator";
 import { compileGeneratedComponent } from "./compile";
+import { parseGeneratedComponent, extractComponentName } from "../babel/parser";
 
 interface DynamicRendererProps {
   componentSource: string;
@@ -19,6 +20,12 @@ export function DynamicRenderer({ componentSource, fallback }: DynamicRendererPr
     const parsed = parseGeneratedComponent(componentSource);
     if (!parsed.valid) {
       setError(`Syntax error: ${parsed.error}`);
+      return;
+    }
+
+    const componentName = extractComponentName(parsed.ast);
+    if (!componentName) {
+      setError("Could not find a component function in the generated code.");
       return;
     }
 
@@ -43,7 +50,7 @@ export function DynamicRenderer({ componentSource, fallback }: DynamicRendererPr
           /import\s*{\s*jsx as _jsx\s*}\s*from\s*["']react\/jsx-runtime["'];?/,
           "const _jsx = React.createElement;"
         )}
-        return LoginForm;
+        return ${componentName};
         `
       );
 
