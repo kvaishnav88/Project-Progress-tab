@@ -41,7 +41,7 @@ export function extractComponentName(ast: File): string | null {
 
   traverse(ast, {
     FunctionDeclaration(path) {
-      if (path.node.id?.name) {
+      if (path.node.id?.name && path.getFunctionParent() === null) {
         foundName = path.node.id.name;
       }
     },
@@ -49,6 +49,18 @@ export function extractComponentName(ast: File): string | null {
       const declaration = path.node.declaration;
       if (declaration.type === "FunctionDeclaration" && declaration.id?.name) {
         foundName = declaration.id.name;
+      }
+    },
+    VariableDeclarator(path) {
+      const init = path.node.init;
+      const isFunctionLike =
+        init?.type === "ArrowFunctionExpression" || init?.type === "FunctionExpression";
+      if (
+        isFunctionLike &&
+        path.node.id.type === "Identifier" &&
+        path.getFunctionParent() === null
+      ) {
+        foundName = path.node.id.name;
       }
     },
   });
