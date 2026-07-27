@@ -1,55 +1,35 @@
-from google import genai
-from google.genai.errors import ClientError, ServerError
-
-from ai.config import settings
 from ai.interfaces.llm import LLMClient
 from ai.logger import logger
-
-
-if not settings.GEMINI_API_KEY:
-    raise RuntimeError("GEMINI_API_KEY not found in .env")
-
-
-client = genai.Client(api_key=settings.GEMINI_API_KEY)
+from ai.chains.ui_generation_chain import UIGenerationChain
 
 
 class GeminiClient(LLMClient):
     """
-    Gemini implementation of the LLM interface.
+    Gemini implementation powered by LangChain.
     """
 
+    def __init__(self):
+        self.chain = UIGenerationChain()
+
     def generate(self, prompt: str) -> str:
-        try:
-            logger.info(
-                "Sending request to Gemini model: %s",
-                settings.GEMINI_MODEL,
-            )
 
-            response = client.models.generate_content(
-                model=settings.GEMINI_MODEL,
-                contents=prompt,
-            )
+        logger.info(
+            "Executing LangChain UI Generation..."
+        )
 
-            logger.info("Gemini response received successfully.")
+        component = self.chain.invoke(prompt)
 
-            component = response.text
+        component = (
+            component
+            .replace("```tsx", "")
+            .replace("```typescript", "")
+            .replace("```jsx", "")
+            .replace("```", "")
+            .strip()
+        )
 
-            component = component.replace("```tsx", "")
-            component = component.replace("```typescript", "")
-            component = component.replace("```jsx", "")
-            component = component.replace("```", "")
-            component = component.strip()
+        logger.info(
+            "LangChain generation completed."
+        )
 
-            return component
-
-        except ClientError as e:
-            logger.error("Gemini Client Error: %s", e)
-            raise RuntimeError(f"Gemini Client Error: {e}") from e
-
-        except ServerError as e:
-            logger.error("Gemini Server Error: %s", e)
-            raise RuntimeError(f"Gemini Server Error: {e}") from e
-
-        except Exception as e:
-            logger.exception("Unexpected Gemini Error")
-            raise RuntimeError(f"Unexpected Gemini Error: {e}") from e
+        return component

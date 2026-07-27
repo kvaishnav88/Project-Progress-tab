@@ -9,15 +9,19 @@ class CognitiveAnalyzer:
     def analyze(self, telemetry: TelemetryData) -> tuple[float, str]:
         score = 0.0
 
-        # Rule 1: Long hesitation
-        if telemetry.hesitation_time >= 5:
+        # Hesitation contributes up to 0.4
+        if telemetry.hesitation_time >= 6:
             score += 0.4
+        elif telemetry.hesitation_time >= 3:
+            score += 0.2
 
-        # Rule 2: Rage clicks
-        if telemetry.rage_clicks >= 3:
+        # Rage clicks contribute up to 0.4
+        if telemetry.rage_clicks >= 4:
             score += 0.4
+        elif telemetry.rage_clicks >= 2:
+            score += 0.2
 
-        # Rule 3: Slow mouse movement
+        # Slow mouse movement contributes up to 0.2
         if telemetry.mouse_velocity <= 20:
             score += 0.2
 
@@ -25,7 +29,7 @@ class CognitiveAnalyzer:
 
         if score >= 0.8:
             strategy = "high_cognitive_load"
-        elif score >= 0.5:
+        elif score >= 0.4:
             strategy = "medium_cognitive_load"
         else:
             strategy = "low_cognitive_load"

@@ -1,58 +1,65 @@
 # AuraGen – Self-Healing Generative UI
 
-AuraGen is an AI-powered adaptive user interface system that detects cognitive load from user interaction telemetry and dynamically generates simplified React UI components using Large Language Models (Gemini) and LangGraph.
+AuraGen is an AI-powered adaptive user interface system that detects user cognitive load from interaction telemetry and dynamically generates optimized React UI components using **LangGraph**, **LangChain**, and **Google Gemini**.
 
-The goal is to reduce user friction by automatically adapting complex interfaces into guided experiences.
-
----
-
-## Project Overview
-
-AuraGen continuously analyzes user interaction patterns such as:
-
-- Mouse movement
-- Hesitation time
-- Rage clicks
-- Cognitive load score
-
-Based on these signals, the AI backend generates an optimized React component that can replace or simplify the existing interface.
+The system automatically simplifies user interfaces based on real-time behavioral analysis, reducing cognitive friction and improving usability.
 
 ---
 
-## Features
+# Project Overview
+
+AuraGen continuously monitors user interaction telemetry such as:
+
+- Mouse Velocity
+- Hesitation Time
+- Rage Clicks
+
+The backend analyzes these signals to determine the user's cognitive load and dynamically generates an adaptive React UI component.
+
+---
+
+# Features
 
 - AI-powered adaptive UI generation
-- Cognitive load analysis
-- FastAPI backend
-- LangGraph workflow
-- Gemini LLM integration
+- Real-time telemetry analysis
+- Cognitive load detection
+- Decision Engine for UI adaptation
+- LangGraph workflow orchestration
+- LangChain-powered prompt pipeline
+- Google Gemini integration
 - React + Next.js frontend
-- Dashboard for monitoring cognitive load
-- Live AI response visualization
-- REST API architecture
-- Modular backend structure
+- Response validation
+- Metrics logging
+- Swagger API documentation
+- Modular backend architecture
 
 ---
 
-## Tech Stack
+# Tech Stack
 
-### Frontend
+## Frontend
 
 - Next.js 14
 - React
 - TypeScript
 - Tailwind CSS
+- Socket.IO Client
 - Lucide Icons
 
-### Backend
+---
+
+## Backend
 
 - Python
 - FastAPI
 - Pydantic
 - LangGraph
+- LangChain
 - Google Gemini API
 
-### Development Tools
+---
+
+## Development Tools
 
 - Git
 - GitHub
@@ -60,25 +67,36 @@ Based on these signals, the AI backend generates an optimized React component th
 
 ---
 
-## Project Structure
+# Project Structure
 
 ```text
 Project-Progress-tab
 │
 ├── backend/
 │   ├── ai/
+│   │   ├── chains/
+│   │   ├── clients/
+│   │   ├── prompts/
+│   │   ├── services/
+│   │   ├── interfaces/
+│   │   ├── config.py
+│   │   ├── constants.py
+│   │   ├── factory.py
+│   │   └── logger.py
+│   │
 │   ├── api/
 │   ├── graph/
 │   ├── models/
 │   ├── tests/
+│   ├── requirements.txt
 │   └── main.py
 │
 ├── frontend/
 │   ├── app/
 │   ├── components/
 │   ├── hooks/
-│   ├── lib/
 │   ├── context/
+│   ├── lib/
 │   └── package.json
 │
 └── README.md
@@ -86,7 +104,7 @@ Project-Progress-tab
 
 ---
 
-## Backend Architecture
+# Backend Architecture
 
 ```text
 Frontend
@@ -100,56 +118,69 @@ FastAPI
       ▼
 LangGraph Workflow
       │
-      ├── Analyze Telemetry
-      ├── Build Prompt
-      └── Generate UI
-                │
-                ▼
-          Gemini API
-                │
-                ▼
+      ▼
+Cognitive Analyzer
+      │
+      ▼
+Decision Engine
+      │
+      ▼
+Prompt Builder
+      │
+      ▼
+LangChain ChatPromptTemplate
+      │
+      ▼
+Google Gemini
+      │
+      ▼
+Response Validator
+      │
+      ▼
+Metrics Logger
+      │
+      ▼
 GenerateResponse
-                │
-                ▼
-Frontend Dashboard
+      │
+      ▼
+Frontend
 ```
 
 ---
 
-## API Endpoint
+# API Endpoint
 
-### Generate Adaptive UI
+## Generate Adaptive UI
 
 ```
 POST /generate-ui
 ```
 
-### Request
+## Request
 
 ```json
 {
-  "component_name": "Payment Form",
-  "cognitive_score": 0.82,
-  "mouse_velocity": 24,
-  "hesitation_time": 5.2,
-  "rage_clicks": 4
+  "component_name": "LoginForm",
+  "mouse_velocity": 35,
+  "hesitation_time": 4,
+  "rage_clicks": 2
 }
 ```
 
-### Response
+## Response
 
 ```json
 {
-  "strategy": "high_cognitive_load",
+  "strategy": "medium_cognitive_load",
   "component": "...React TSX...",
   "is_valid": true,
-  "generation_time": 2.74
+  "generation_time": 11.94
 }
 ```
 
 ---
 
-## Running the Backend
+# Running the Backend
 
 ```bash
 cd backend
@@ -169,7 +200,7 @@ Backend URL
 http://127.0.0.1:8000
 ```
 
-Swagger
+Swagger Documentation
 
 ```
 http://127.0.0.1:8000/docs
@@ -177,7 +208,7 @@ http://127.0.0.1:8000/docs
 
 ---
 
-## Running the Frontend
+# Running the Frontend
 
 ```bash
 cd frontend
@@ -195,76 +226,106 @@ http://localhost:3000
 
 ---
 
-## AI Workflow
+# AI Workflow
 
 ```text
-Telemetry
-
-↓
-
-FastAPI
-
-↓
-
-LangGraph
-
-↓
-
-Gemini
-
-↓
-
-Adaptive React Component
-
-↓
-
-Frontend
+User Interaction
+        │
+        ▼
+Telemetry Collection
+(Mouse Velocity, Hesitation, Rage Clicks)
+        │
+        ▼
+FastAPI API
+        │
+        ▼
+LangGraph Workflow
+        │
+        ▼
+Cognitive Analyzer
+        │
+        ▼
+Decision Engine
+        │
+        ▼
+Prompt Builder
+        │
+        ▼
+LangChain ChatPromptTemplate
+        │
+        ▼
+Google Gemini
+        │
+        ▼
+React Component Generation
+        │
+        ▼
+Response Validator
+        │
+        ▼
+Metrics Logger
+        │
+        ▼
+Frontend Rendering
 ```
 
 ---
 
-## Current Progress
+# Current Progress
 
-### Completed
+## Completed
 
-- Backend API
-- FastAPI
+### AI Backend
+
+- FastAPI backend
 - LangGraph workflow
-- Gemini integration
-- Prompt engineering
-- Frontend integration
+- LangChain integration
+- Google Gemini integration
+- Cognitive Analyzer
+- Decision Engine
+- Adaptive Prompt Builder
+- Dynamic React UI generation
+- Response Validator
+- Metrics Logger
+- Backend error handling
+- Swagger documentation
+- REST API
+
+### Frontend
+
+- Next.js application
 - Dashboard
 - AI Integration Panel
-- End-to-end API communication
+- API communication
 - CORS configuration
-- Swagger documentation
 
 ---
 
-## Future Enhancements
+# Future Enhancements
 
 - Live rendering of generated React components
+- Runtime component sandbox
 - Real browser telemetry collection
-- Component validation
-- Database support
+- AI response caching
 - Authentication
-- Deployment
-- Analytics dashboard
+- PostgreSQL integration
 - User history
+- Analytics dashboard
+- Deployment
 
 ---
 
-## Team
+# Team
 
 AuraGen Development Team
 
 - Frontend Development
 - AI Backend Development
-- Telemetry & Analytics
+- Runtime Engine & Security
 - Integration & Testing
 
 ---
 
-## License
+# License
 
 This project was developed for educational and research purposes.

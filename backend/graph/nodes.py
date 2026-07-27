@@ -122,6 +122,7 @@ def generate_component(state):
         #state["is_valid"] = True
 
     except Exception as e:
+        logger.exception("Component generation failed.")
 
         end = time.perf_counter()
 
