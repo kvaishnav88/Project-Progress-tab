@@ -2,45 +2,105 @@ import time
 
 from ai.factory import get_llm_client
 from ai.logger import logger
-from ai.prompts.ui_prompt import build_ui_prompt
+from ai.prompts.ui_prompt import (
+    build_standard_prompt,
+    build_ui_prompt,
+)
+from ai.services.cognitive_analyzer import CognitiveAnalyzer
+from ai.services.decision_engine import DecisionEngine
+from ai.services.validator import ResponseValidator
+from ai.services.metrics_logger import MetricsLogger
 
 llm = get_llm_client()
+analyzer = CognitiveAnalyzer()
+decision_engine = DecisionEngine()
+validator = ResponseValidator()
+metrics_logger = MetricsLogger()
 
 
 def analyze_telemetry(state):
     """
-    Decide adaptation strategy from telemetry.
+    Analyze telemetry and determine the UI adaptation strategy.
     """
 
     telemetry = state["telemetry"]
 
-    score = telemetry.cognitive_score
+    score, strategy = analyzer.analyze(telemetry)
 
-    if score >= 0.8:
-        strategy = "high_cognitive_load"
-    elif score >= 0.5:
-        strategy = "medium_cognitive_load"
-    else:
-        strategy = "low_cognitive_load"
+    telemetry.cognitive_score = score
 
-    logger.info("Selected strategy: %s", strategy)
+    logger.info(
+        "Cognitive Score: %.2f | Strategy: %s",
+        score,
+        strategy,
+    )
 
     state["strategy"] = strategy
 
     return state
 
-
-def build_prompt(state):
+def decide_adaptation(state):
     """
-    Build the prompt for the LLM.
+    Decide how the UI should adapt based on the cognitive load strategy.
     """
 
-    logger.info("Building prompt...")
+    logger.info("Running Decision Engine...")
 
-    state["prompt"] = build_ui_prompt(state["telemetry"])
+    decision = decision_engine.decide(state["strategy"])
+
+    state["decision"] = decision
+
+    logger.info("Decision: %s", decision)
 
     return state
 
+def choose_prompt(state):
+    """
+    Decide which prompt builder to use.
+    """
+
+    strategy = state["strategy"]
+
+    if strategy == "low_cognitive_load":
+        return "standard_prompt"
+
+    if strategy in (
+    "medium_cognitive_load",
+    "high_cognitive_load",
+    ):
+        return "adaptive_prompt"
+
+    return "standard_prompt"
+
+
+def build_standard_prompt_node(state):
+    """
+    Build a standard prompt for users with low cognitive load.
+    """
+
+    logger.info("Building standard prompt...")
+
+    state["prompt"] = build_standard_prompt(
+        state["telemetry"]
+    )
+    state["prompt_type"] = "standard"
+
+    return state
+
+def build_adaptive_prompt(state):
+    """
+    Build an adaptive prompt for medium/high cognitive load.
+    """
+
+    logger.info("Building adaptive prompt...")
+
+    state["prompt"] = build_ui_prompt(
+        state["telemetry"],
+        state["decision"],
+    )
+    state["prompt_type"] = "adaptive"
+
+    return state
 
 def generate_component(state):
     """
@@ -59,9 +119,10 @@ def generate_component(state):
 
         state["generation_time"] = round(end - start, 2)
 
-        state["is_valid"] = True
+        #state["is_valid"] = True
 
     except Exception as e:
+        logger.exception("Component generation failed.")
 
         end = time.perf_counter()
 
@@ -72,5 +133,38 @@ def generate_component(state):
         state["is_valid"] = False
 
         state["errors"].append(str(e))
+
+    return state
+
+def validate_component(state):
+    """
+    Validate the generated component.
+    """
+
+    logger.info("Validating generated component...")
+
+    valid, errors = validator.validate(
+        state["component"]
+    )
+
+    state["errors"].extend(errors)
+    state["is_valid"] = valid and len(state["errors"]) == 0
+
+    if valid:
+        logger.info("Validation successful.")
+    else:
+        logger.warning(
+            "Validation failed: %s",
+            errors,
+        )
+
+    return state
+
+def log_metrics(state):
+    """
+    Log workflow metrics.
+    """
+
+    metrics_logger.log_summary(state)
 
     return state
