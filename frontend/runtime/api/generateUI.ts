@@ -31,3 +31,11 @@ export async function fetchGeneratedComponent(
   const data: GenerateUIResponse = await response.json();
   return data;
 }
+
+export interface FrictionSignals {
+  component_name: string;
+  cognitive_score: number;
+  mouse_velocity: number;
+  hesitation_time: number;
+  rage_clicks: number;
+}
