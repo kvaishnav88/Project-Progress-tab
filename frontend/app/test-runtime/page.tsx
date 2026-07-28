@@ -11,12 +11,13 @@ export default function TestRuntimePage() {
   useEffect(() => {
     fetchGeneratedComponent(
       {
-        component_name: "LoginForm",
-        mouse_velocity: 15,
-        hesitation_time: 6,
-        rage_clicks: 4,
+        component_name: "PaymentForm",
+        cognitive_score: 0.85,
+        mouse_velocity: 20,
+        hesitation_time: 6.5,
+        rage_clicks: 5,
       },
-      "http://localhost:8000" // <-- ask your teammate what port her backend actually runs on
+      "http://127.0.0.1:8000"
     )
       .then((data) => setComponentSource(data.component))
       .catch((err) => setFetchError(err.message));
