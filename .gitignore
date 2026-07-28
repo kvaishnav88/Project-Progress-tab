@@ -1,47 +1,27 @@
-# # Python
-# __pycache__/
-# *.py[cod]
-# *.pyo
-
-# # Virtual Environment
-# .venv/
-
-# # Environment Variables
-# .env
-
-# # VS Code
-# .vscode/
-
-# # OS Files
-# .DS_Store
-# Thumbs.db
-
 # ==========================
 # Python
 # ==========================
+AI/
 __pycache__/
 *.py[cod]
 *.pyo
 
+# ==========================
 # Virtual Environment
+# ==========================
 .venv/
 venv/
 
+# ==========================
 # Environment Variables
+# ==========================
 .env
 .env.local
-<<<<<<< HEAD
 
+# ==========================
 # Python Framework
+# ==========================
 .nicegui/
-
-# Node.js
-node_modules/
-.next/
-dist/
-out/
-=======
->>>>>>> df998ad (feat: integrate frontend with AI backend and add project documentation)
 
 # ==========================
 # Node.js / Next.js
@@ -49,11 +29,7 @@ out/
 node_modules/
 .next/
 dist/
-
-# ==========================
-# NiceGUI
-# ==========================
-.nicegui/
+out/
 
 # ==========================
 # VS Code
