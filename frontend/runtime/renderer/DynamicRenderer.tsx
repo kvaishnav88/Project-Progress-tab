@@ -46,12 +46,14 @@ export function DynamicRenderer({ componentSource, fallback }: DynamicRendererPr
           /import\s*{\s*jsx as _jsx\s*}\s*from\s*["']react\/jsx-runtime["'];?/,
           "const _jsx = React.createElement;"
         )
+        .replace(/^import\s+.*$/gm, "")
         .replace(/export\s+default\s+/, "")
         .replace(/^export\s+/gm, "");
 
       const moduleFactory = new Function(
         "React",
         `
+        const { useState, useEffect, useMemo, useCallback, useRef, useContext, useReducer } = React;
         const exports = {};
         ${cleanedCode}
         return ${componentName};
