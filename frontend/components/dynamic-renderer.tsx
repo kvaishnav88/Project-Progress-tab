@@ -1,5 +1,5 @@
 "use client";
-
+import { DynamicRenderer as SafeRenderer } from "../runtime/renderer/DynamicRenderer";
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Bot, RefreshCw, Sparkles, CheckCircle2, XCircle, Clock, Zap } from 'lucide-react';
@@ -21,7 +21,7 @@ type GenerationResult = {
   strategy: string;
   generation_time: number;
   is_valid: boolean;
-  component_html?: string;
+  component: string;
   reasoning?: string;
   complexity_score?: number;
 };
@@ -187,10 +187,14 @@ function SuccessState({
       </div>
 
       {/* Rendered AI component output */}
-      {result.component_html ? (
-        <div
-          className="rounded-2xl border border-white/10 bg-slate-900/70 p-4 text-sm text-slate-200"
-          dangerouslySetInnerHTML={{ __html: result.component_html }}
+      {result.component ? (
+        <SafeRenderer
+          componentSource={result.component}
+          fallback={
+            <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-4 text-sm text-slate-200">
+              Could not safely render the generated component.
+            </div>
+          }
         />
       ) : (
         /* Structured result card when no HTML is returned */
