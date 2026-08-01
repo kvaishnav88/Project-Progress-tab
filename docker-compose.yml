@@ -1,0 +1,36 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: auragen-postgres
+    environment:
+      POSTGRES_USER: auragen
+      POSTGRES_PASSWORD: auragen
+      POSTGRES_DB: auragen
+    ports:
+      - "5433:5432"
+    volumes:
+      - auragen_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U auragen -d auragen"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Optional — skip if you already have Redis on :6379
+  redis:
+    image: redis:7-alpine
+    container_name: auragen-redis
+    ports:
+      - "6380:6379"
+    profiles: ["full"]
+    volumes:
+      - auragen_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  auragen_pg_data:
+  auragen_redis_data:
