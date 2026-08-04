@@ -1,6 +1,6 @@
 "use client";
 import { DynamicRenderer as SafeRenderer } from "../runtime/renderer/DynamicRenderer";
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Bot, RefreshCw, Sparkles, CheckCircle2, XCircle, Clock, Zap } from 'lucide-react';
 import { useTelemetry } from '@/context/telemetry-context';
@@ -270,6 +270,20 @@ export function DynamicRenderer() {
   const [errorMessage, setErrorMessage] = useState('');
   const [visibleStep, setVisibleStep] = useState(0);
 
+  const hasAutoTriggeredRef = useRef(false);
+  const AUTO_TRIGGER_THRESHOLD = 5;
+
+  useEffect(() => {
+    if (
+      frictionScore >= AUTO_TRIGGER_THRESHOLD &&
+      state === 'idle' &&
+      !hasAutoTriggeredRef.current
+    ) {
+      hasAutoTriggeredRef.current = true;
+      handleGenerate();
+    }
+  }, [frictionScore, state]);
+
   async function handleGenerate() {
     setState('generating');
     setVisibleStep(0);
@@ -313,6 +327,7 @@ export function DynamicRenderer() {
     setState('idle');
     setResult(null);
     setVisibleStep(0);
+    hasAutoTriggeredRef.current = false;
   }
 
   return (
