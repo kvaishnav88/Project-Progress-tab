@@ -1,2 +1,18 @@
+<<<<<<< HEAD
 nicegui==1.4.25
 python-dotenv==1.0.1
+=======
+fastapi
+uvicorn[standard]
+sqlalchemy
+psycopg2-binary
+alembic
+redis
+python-socketio
+python-engineio
+python-dotenv
+pydantic
+email-validator
+httpx
+requests
+>>>>>>> 9173720 (Add backend files for my feature)
