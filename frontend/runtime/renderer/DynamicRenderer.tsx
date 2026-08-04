@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { validateComponentSafety } from "../babel/validator";
 import { compileGeneratedComponent } from "./compile";
 import { parseGeneratedComponent, extractComponentName } from "../babel/parser";
+import * as LucideIcons from "lucide-react";
 
 interface DynamicRendererProps {
   componentSource: string;
@@ -40,26 +41,36 @@ export function DynamicRenderer({ componentSource, fallback }: DynamicRendererPr
       return;
     }
 
-    try {
+try {
       const cleanedCode = compiled.compiledCode
         .replace(/^import\s+.*$/gm, "")
         .replace(/export\s+default\s+/, "")
         .replace(/^export\s+/gm, "");
+
+      const usedIconNames = Array.from(
+        new Set((cleanedCode.match(/[A-Z][A-Za-z0-9]*/g) || []).filter((n) => n in LucideIcons))
+      );
+      const iconDestructure = usedIconNames.length
+        ? `const { ${usedIconNames.join(", ")} } = LucideIcons;`
+        : "";
+
       const moduleFactory = new Function(
         "React",
+        "LucideIcons",
         `
         const { useState, useEffect, useMemo, useCallback, useRef, useContext, useReducer } = React;
         const _jsx = React.createElement;
         const _jsxs = React.createElement;
         const _Fragment = React.Fragment;
+        ${iconDestructure}
         const exports = {};
         ${cleanedCode}
         return ${componentName};
         `
       );
 
-      const GeneratedComponent = moduleFactory(React);
-      setComponent(() => GeneratedComponent);
+      const GeneratedComponent = moduleFactory(React, LucideIcons);
+    setComponent(() => GeneratedComponent);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown execution error");
     }

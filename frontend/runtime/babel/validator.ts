@@ -28,7 +28,8 @@ export function validateComponentSafety(ast: File): ValidationResult {
     },
     ImportDeclaration(path) {
       const source = path.node.source.value;
-      if (source !== "react" && !source.startsWith("./") && !source.startsWith("../")) {
+      const ALLOWED_EXTERNAL = new Set(["react", "lucide-react"]);
+      if (!ALLOWED_EXTERNAL.has(source) && !source.startsWith("./") && !source.startsWith("../")) {
         errors.push(`Disallowed import: "${source}"`);
       }
     },
