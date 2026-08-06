@@ -1,4 +1,6 @@
-from pydantic import BaseModel
+from typing import List
+
+from pydantic import BaseModel, Field
 
 
 class GenerateResponse(BaseModel):
@@ -13,3 +15,5 @@ class GenerateResponse(BaseModel):
     is_valid: bool
 
     generation_time: float
+
+    errors: List[str] = Field(default_factory=list)

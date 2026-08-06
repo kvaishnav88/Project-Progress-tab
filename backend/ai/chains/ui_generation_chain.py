@@ -11,6 +11,12 @@ class UIGenerationChain:
     """
 
     def __init__(self):
+        if not settings.GEMINI_API_KEY:
+            raise ValueError(
+                "GEMINI_API_KEY is missing. "
+                "Set it in backend/.env or as an environment variable. "
+                "Get a key from https://aistudio.google.com/apikey"
+            )
 
         self.llm = ChatGoogleGenerativeAI(
             model=settings.GEMINI_MODEL,

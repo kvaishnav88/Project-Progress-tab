@@ -1,7 +1,14 @@
 import os
+from pathlib import Path
+
 from dotenv import load_dotenv
 
-load_dotenv()
+# Load .env from the backend package dir and repo root (cwd-independent).
+_BACKEND_DIR = Path(__file__).resolve().parent.parent
+_REPO_ROOT = _BACKEND_DIR.parent
+
+load_dotenv(_BACKEND_DIR / ".env")
+load_dotenv(_REPO_ROOT / ".env")
 
 
 class Settings:
@@ -10,7 +17,7 @@ class Settings:
 
     GEMINI_MODEL = os.getenv(
         "GEMINI_MODEL",
-        "gemini-3.1-flash-lite",
+        "gemini-2.0-flash",
     )
 
     # Future support for multiple providers

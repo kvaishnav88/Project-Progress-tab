@@ -1,6 +1,7 @@
 import logging
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.orm import Session as DbSession
 from socketio import ASGIApp
 
 from app.api.routes import router as api_router

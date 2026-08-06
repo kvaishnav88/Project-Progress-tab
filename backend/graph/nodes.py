@@ -11,11 +11,20 @@ from ai.services.decision_engine import DecisionEngine
 from ai.services.validator import ResponseValidator
 from ai.services.metrics_logger import MetricsLogger
 
-llm = get_llm_client()
 analyzer = CognitiveAnalyzer()
 decision_engine = DecisionEngine()
 validator = ResponseValidator()
 metrics_logger = MetricsLogger()
+
+_llm = None
+
+
+def _get_llm():
+    """Lazy-load the LLM so the app can start before GEMINI_API_KEY is set."""
+    global _llm
+    if _llm is None:
+        _llm = get_llm_client()
+    return _llm
 
 
 def analyze_telemetry(state):
@@ -113,7 +122,7 @@ def generate_component(state):
 
     try:
 
-        state["component"] = llm.generate(state["prompt"])
+        state["component"] = _get_llm().generate(state["prompt"])
 
         end = time.perf_counter()
 
