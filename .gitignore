@@ -41,3 +41,6 @@ out/
 # ==========================
 .DS_Store
 Thumbs.db
+# Local integration DBs
+auragen_integration.db
+
