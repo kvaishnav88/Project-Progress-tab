@@ -14,6 +14,10 @@ class Settings:
     REDIS_URL: str = os.getenv("REDIS_URL", "redis://127.0.0.1:6379/0")
     CORS_ORIGINS: str = os.getenv("CORS_ORIGINS", "*")
     SECRET_KEY: str = os.getenv("SECRET_KEY", "change_me_in_production")
+    AI_SERVICE_URL: str = os.getenv(
+        "AI_SERVICE_URL",
+        "http://127.0.0.1:8000/generate-ui",
+    )
 
     @property
     def cors_origin_list(self) -> list[str]:

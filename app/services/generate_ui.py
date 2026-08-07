@@ -13,9 +13,10 @@ from app.cache import redis_client
 from app.crud import generated_ui as generated_ui_crud
 from app.schemas.generated_ui import GeneratedUICreate
 from app.services.ai_generator import (
+    call_external_ai,
     deserialize_cached_payload,
-    generate_react_component,
-    prompt_hash,
+    normalize_component_name,
+    payload_hash,
     serialize_cached_payload,
 )
 
@@ -49,7 +50,12 @@ def _build_history_item(component) -> dict[str, Any]:
 
 async def generate_and_persist(
     db: Session,
-    prompt: str,
+    prompt: str | None = None,
+    component_name: str | None = None,
+    mouse_velocity: float | None = None,
+    hesitation_time: float | None = None,
+    rage_clicks: int | None = None,
+    cognitive_score: float | None = None,
     user_id: int | None = None,
     session_id: int | None = None,
     sid: str | None = None,
@@ -59,15 +65,28 @@ async def generate_and_persist(
     """
     Full generate pipeline with optional Socket.IO progress emissions.
     """
-    prompt = prompt.strip()
-    cache_hash = prompt_hash(prompt, user_id)
-    room = sid
+    component_name = (
+        component_name.strip() if isinstance(component_name, str) and component_name.strip() else None
+    )
+    prompt_text = prompt.strip() if isinstance(prompt, str) and prompt.strip() else None
+
+    request_payload: dict[str, Any] = {
+        "component_name": component_name or prompt_text or "Payment Form",
+        "mouse_velocity": float(mouse_velocity or 0.0),
+        "hesitation_time": float(hesitation_time or 0.0),
+        "rage_clicks": int(rage_clicks or 0),
+    }
+    if cognitive_score is not None:
+        request_payload["cognitive_score"] = float(cognitive_score)
+
+    cache_hash = payload_hash(request_payload, user_id)
 
     await _emit(
         emit,
         "ai_started",
         {
-            "prompt": prompt,
+            "prompt": prompt_text,
+            "component_name": request_payload["component_name"],
             "user_id": user_id,
             "session_id": session_id,
             "progress": 0,
@@ -100,13 +119,13 @@ async def generate_and_persist(
         await _emit(
             emit,
             "ai_processing",
-            {"progress": 50, "message": "Building React component", "cached": False},
+            {"progress": 50, "message": "Sending request to external AI service", "cached": False},
         )
-        generated = generate_react_component(prompt)
+        generated = await call_external_ai(request_payload)
         await _emit(
             emit,
             "ai_processing",
-            {"progress": 80, "message": "Component ready", "cached": False},
+            {"progress": 80, "message": "AI service returned component", "cached": False},
         )
         redis_client.cache_ai_response(
             cache_hash,
@@ -114,12 +133,16 @@ async def generate_and_persist(
             ttl_seconds=AI_CACHE_TTL,
         )
 
+    component_name_value = normalize_component_name(
+        generated.get("component_name"), request_payload["component_name"]
+    )
+
     ui_in = GeneratedUICreate(
         user_id=user_id,
         session_id=session_id,
-        component_name=generated["component_name"],
-        prompt=prompt,
-        generated_code=generated["generated_code"],
+        component_name=component_name_value,
+        prompt=prompt_text or request_payload["component_name"],
+        generated_code=generated["component"],
     )
     saved = generated_ui_crud.create_generated_ui(db, ui_in)
 
@@ -134,6 +157,9 @@ async def generate_and_persist(
         "prompt": saved.prompt,
         "component": saved.generated_code,
         "generated_code": saved.generated_code,
+        "strategy": generated.get("strategy", ""),
+        "is_valid": generated.get("is_valid", False),
+        "generation_time": generated.get("generation_time", 0.0),
         "created_at": saved.created_at.isoformat() if saved.created_at else None,
     }
 
@@ -147,6 +173,9 @@ async def generate_and_persist(
             "component_name": saved.component_name,
             "id": saved.id,
             "component": saved.generated_code,
+            "strategy": result["strategy"],
+            "is_valid": result["is_valid"],
+            "generation_time": result["generation_time"],
         },
     )
     await _emit(
@@ -172,5 +201,4 @@ async def generate_and_persist(
         },
     )
 
-    _ = room
     return result
