@@ -89,5 +89,6 @@ try {
     return <div className="text-sm text-gray-500">Loading generated UI...</div>;
   }
 
-  return <Component />;
+  const noop = () => {};
+  return <Component onSave={noop} onSubmit={noop} onComplete={noop} onCancel={noop} onChange={noop} onClick={noop} />;
 }

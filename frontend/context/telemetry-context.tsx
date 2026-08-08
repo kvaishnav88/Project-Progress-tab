@@ -175,7 +175,6 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
     const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3001';
     const socket = io(socketUrl, {
       autoConnect: false,
-      transports: ['websocket'],
       reconnectionAttempts: 5,
       reconnectionDelay: 2000,
     });
