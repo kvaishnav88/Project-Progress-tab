@@ -7,7 +7,7 @@ def get_cognitive_state(score: float) -> str:
     """
     if score >= 0.8:
         return "High Cognitive Load"
-    elif score >= 0.5:
+    elif score >= 0.4:
         return "Moderate Cognitive Load"
     return "Low Cognitive Load"
 
