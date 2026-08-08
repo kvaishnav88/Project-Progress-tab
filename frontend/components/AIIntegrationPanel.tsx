@@ -23,10 +23,6 @@ export default function AIIntegrationPanel({ metrics }: Props) {
 
       const response = await generateUI({
         component_name: metrics.topField,
-        cognitive_score: Math.min(
-        Math.max(metrics.averageCognitiveLoad / 100, 0),
-        1
-        ),
         hesitation_time: metrics.averageHesitationMs,
         rage_clicks: Math.round(metrics.averageClickErrorRate * 10),
 
