@@ -58,7 +58,7 @@ try {
         "React",
         "LucideIcons",
         `
-        const { useState, useEffect, useMemo, useCallback, useRef, useContext, useReducer } = React;
+        const { useState, useEffect, useMemo, useCallback, useRef, useContext, useReducer, useId } = React;
         const _jsx = React.createElement;
         const _jsxs = React.createElement;
         const _Fragment = React.Fragment;
