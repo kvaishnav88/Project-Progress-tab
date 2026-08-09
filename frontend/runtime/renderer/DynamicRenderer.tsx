@@ -10,7 +10,7 @@ interface DynamicRendererProps {
 }
 
 export function DynamicRenderer({ componentSource, fallback }: DynamicRendererProps) {
-  const [Component, setComponent] = useState<React.ComponentType | null>(null);
+  const [Component, setComponent] = useState<React.ComponentType<any> | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
