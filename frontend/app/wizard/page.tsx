@@ -112,7 +112,7 @@ export default function WizardPage() {
     setResult(null);
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/generate-ui', {
+      const response = await fetch('http://127.0.0.1:8001/api/generate-ui', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
