@@ -1,7 +1,5 @@
-<<<<<<< HEAD
 nicegui==1.4.25
 python-dotenv==1.0.1
-=======
 fastapi
 uvicorn[standard]
 sqlalchemy
@@ -15,4 +13,3 @@ pydantic
 email-validator
 httpx
 requests
->>>>>>> 9173720 (Add backend files for my feature)

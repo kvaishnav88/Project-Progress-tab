@@ -173,17 +173,26 @@ async def telemetry(sid, data):
 async def generate_ui(sid, data):
     """
     Real-time UI generation with progress events.
-    Client payload: { prompt, user_id?, session_id?, use_cache? }
+    Client payload may include prompt or telemetry fields.
     """
     payload = data if isinstance(data, dict) else {}
     prompt = str(payload.get("prompt") or "").strip()
-    if not prompt:
-        await sio.emit("error", {"event": "generate_ui", "detail": "prompt is required"}, to=sid)
+    component_name = str(payload.get("component_name") or prompt or "GeneratedComponent").strip()
+    if not component_name:
+        await sio.emit(
+            "error",
+            {"event": "generate_ui", "detail": "component_name or prompt is required"},
+            to=sid,
+        )
         return
 
     user_id = _to_int(payload.get("user_id"))
     session_id = _to_int(payload.get("session_id"))
     use_cache = bool(payload.get("use_cache", True))
+    mouse_velocity = _to_float(payload.get("mouse_velocity"))
+    hesitation_time = _to_float(payload.get("hesitation_time"))
+    rage_clicks = _to_int(payload.get("rage_clicks"))
+    cognitive_score = _to_float(payload.get("cognitive_score"))
 
     from app.services.generate_ui import generate_and_persist
 
@@ -201,7 +210,12 @@ async def generate_ui(sid, data):
 
         await generate_and_persist(
             db,
-            prompt=prompt,
+            prompt=prompt if prompt else None,
+            component_name=component_name,
+            mouse_velocity=mouse_velocity,
+            hesitation_time=hesitation_time,
+            rage_clicks=rage_clicks,
+            cognitive_score=cognitive_score,
             user_id=user_id,
             session_id=session_id,
             sid=sid,

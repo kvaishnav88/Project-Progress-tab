@@ -7,7 +7,7 @@ def get_cognitive_state(score: float) -> str:
     """
     if score >= 0.8:
         return "High Cognitive Load"
-    elif score >= 0.5:
+    elif score >= 0.4:
         return "Moderate Cognitive Load"
     return "Low Cognitive Load"
 
@@ -67,6 +67,32 @@ def get_context_prompt(
     cognitive_state: str,
     observations: str,
 ) -> str:
+    """
+    Build telemetry and current UI state context.
+    """
+
+    ui_state = telemetry.ui_state or {}
+
+    return f"""
+Current Component:
+{telemetry.component_name}
+
+User Cognitive State:
+{cognitive_state}
+
+Observed Behaviour:
+{observations}
+
+Current UI / User State:
+{ui_state}
+
+State Preservation Rules:
+- Preserve relevant user-entered values.
+- Do not unnecessarily clear or reset existing input.
+- Preserve the user's current task context.
+- Keep existing information when simplifying the interface.
+- Only change the UI structure necessary to reduce cognitive load.
+"""
     """
     Build telemetry context section.
     """

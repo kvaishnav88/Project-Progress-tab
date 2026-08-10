@@ -21,7 +21,12 @@ class GeneratedUIRead(GeneratedUICreate):
 
 
 class GenerateUIRequest(BaseModel):
-    prompt: str = Field(..., min_length=1, max_length=4000, description="Natural language UI request")
+    component_name: Optional[str] = Field(default=None, min_length=1, max_length=200)
+    prompt: Optional[str] = Field(default=None, min_length=1, max_length=4000)
+    mouse_velocity: float
+    hesitation_time: float
+    rage_clicks: int = Field(..., ge=0)
+    cognitive_score: Optional[float] = None
     user_id: Optional[int] = Field(default=None, ge=1)
     session_id: Optional[int] = Field(default=None, ge=1)
     use_cache: bool = True
@@ -38,4 +43,7 @@ class GenerateUIResponse(BaseModel):
     prompt: str
     component: str
     generated_code: str
+    strategy: str
+    is_valid: bool
+    generation_time: float
     created_at: Optional[str] = None
