@@ -182,22 +182,26 @@ def delete_telemetry(telemetry_id: int, db: DbSession = Depends(get_db)):
     "/generate-ui",
     response_model=GenerateUIResponse,
     status_code=status.HTTP_201_CREATED,
-    summary="Generate React UI from prompt",
+    summary="Generate UI from telemetry or prompt",
     responses={
-        400: {"description": "Bad Request — invalid prompt"},
+        400: {"description": "Bad Request — invalid payload"},
         404: {"description": "User or session not found"},
         500: {"description": "Server Error"},
     },
 )
 async def generate_ui(body: GenerateUIRequest, db: DbSession = Depends(get_db)):
     """
-    Generate a React component from a natural-language prompt.
+    Generate a React component using telemetry and optional prompt/component_name.
 
-    Flow: Redis cache check → AI generate (if miss) → save PostgreSQL → emit Socket.IO events.
+    Flow: Redis cache check → external AI service → save PostgreSQL → emit Socket.IO events.
     """
-    prompt = body.prompt.strip()
-    if not prompt:
-        raise HTTPException(status_code=400, detail="Prompt cannot be empty")
+    prompt = body.prompt.strip() if body.prompt else None
+    component_name = body.component_name.strip() if body.component_name else None
+    if not prompt and not component_name:
+        raise HTTPException(
+            status_code=400,
+            detail="Either prompt or component_name is required for generation",
+        )
 
     if body.user_id is not None and not user_crud.get_user(db, body.user_id):
         raise HTTPException(status_code=404, detail="User not found")
@@ -210,6 +214,11 @@ async def generate_ui(body: GenerateUIRequest, db: DbSession = Depends(get_db)):
     result = await generate_and_persist(
         db,
         prompt=prompt,
+        component_name=component_name,
+        mouse_velocity=body.mouse_velocity,
+        hesitation_time=body.hesitation_time,
+        rage_clicks=body.rage_clicks,
+        cognitive_score=body.cognitive_score,
         user_id=body.user_id,
         session_id=body.session_id,
         use_cache=body.use_cache,

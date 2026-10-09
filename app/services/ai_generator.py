@@ -1,8 +1,9 @@
 """
-Rule-based AI UI generator for Week 2.
+Adapter for calling an external AI UI generation API.
 
-Produces React component code from a prompt. Repeated prompts are served from
-Redis; results are persisted to PostgreSQL by the caller.
+This module keeps the backend from duplicating AI cognitive-load
+calculation and code generation, instead proxying requests to an existing
+external AI service and validating the returned runtime payload.
 """
 
 from __future__ import annotations
@@ -12,11 +13,53 @@ import json
 import re
 from typing import Any
 
+import httpx
+
+from app.core.config import settings
+
 
 def prompt_hash(prompt: str, user_id: int | None = None) -> str:
     normalized = " ".join(prompt.strip().lower().split())
     seed = f"{user_id or 0}:{normalized}"
     return hashlib.sha256(seed.encode("utf-8")).hexdigest()
+
+
+def payload_hash(payload: dict[str, Any], user_id: int | None = None) -> str:
+    normalized = json.dumps(payload, sort_keys=True)
+    seed = f"{user_id or 0}:{normalized}"
+    return hashlib.sha256(seed.encode("utf-8")).hexdigest()
+
+
+def normalize_component_name(component_name: str | None, prompt: str | None = None) -> str:
+    if isinstance(component_name, str) and component_name.strip():
+        return component_name.strip()
+    if isinstance(prompt, str) and prompt.strip():
+        words = [w.capitalize() for w in re.findall(r"[a-zA-Z0-9]+", prompt)][:6]
+        name = "".join(words)
+        if name and not name[0].isalpha():
+            name = f"Ui{name}"
+        return name or "GeneratedComponent"
+    return "GeneratedComponent"
+
+
+async def call_external_ai(payload: dict[str, Any]) -> dict[str, Any]:
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        response = await client.post(settings.AI_SERVICE_URL, json=payload)
+        response.raise_for_status()
+        data = response.json()
+
+    if not isinstance(data, dict):
+        raise ValueError("AI service returned unexpected response format")
+    if "component" not in data:
+        raise ValueError("AI service response missing required field: component")
+
+    return {
+        "strategy": str(data.get("strategy", "")),
+        "component": str(data["component"]),
+        "is_valid": bool(data.get("is_valid", False)),
+        "generation_time": float(data.get("generation_time", 0.0)),
+        "component_name": str(data.get("component_name", "")),
+    }
 
 
 def cache_key_for_prompt(prompt: str, user_id: int | None = None) -> str:
@@ -184,7 +227,7 @@ def serialize_cached_payload(payload: dict[str, Any]) -> str:
 def deserialize_cached_payload(raw: str) -> dict[str, Any] | None:
     try:
         data = json.loads(raw)
-        if isinstance(data, dict) and "generated_code" in data:
+        if isinstance(data, dict) and "component" in data:
             return data
     except json.JSONDecodeError:
         return None
