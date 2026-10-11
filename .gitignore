@@ -42,3 +42,5 @@ out/
 .DS_Store
 Thumbs.db
 .pgdata/
+
+frontend/public/sandbox/
