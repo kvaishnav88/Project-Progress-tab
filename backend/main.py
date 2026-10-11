@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from socketio import ASGIApp
 from api.generate import router as generate_router
 from websocket.socketio_server import sio
+from api.limits import allowed_origins
 
 fastapi_app = FastAPI(
     title="AuraGen AI Backend",
@@ -12,10 +13,7 @@ fastapi_app = FastAPI(
 # Allow frontend to call backend
 fastapi_app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-    ],
+    allow_origins=allowed_origins(),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
