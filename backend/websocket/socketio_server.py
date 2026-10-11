@@ -14,10 +14,11 @@ from collections import deque
 from typing import Any
 
 import socketio
+from api.limits import allowed_origins
 
 sio = socketio.AsyncServer(
     async_mode="asgi",
-    cors_allowed_origins="*",
+    cors_allowed_origins=allowed_origins(),
 )
 
 WINDOW_SIZE = 8
